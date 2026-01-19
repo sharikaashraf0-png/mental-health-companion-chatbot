@@ -50,9 +50,9 @@ export const getGroqResponse = async (history, message) => {
                 max_tokens: 1024,
             });
         } else {
-            // Production: Use Serverless Function
-            console.log("Using Serverless Function");
-            const res = await fetch('/api/chatbot', {
+            // Production: Use Netlify Function
+            console.log("Using Netlify Function");
+            const res = await fetch('/.netlify/functions/chatbot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages })

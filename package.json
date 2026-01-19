@@ -2,7 +2,6 @@
   "name": "mental-health-chatbot",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://sharikaashraf0-png.github.io/mental-health-companion-chatbot",
   "type": "module",
   "scripts": {
     "predeploy": "npm run build",

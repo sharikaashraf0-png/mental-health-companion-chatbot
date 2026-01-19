@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Chat from './pages/Chat';
@@ -18,6 +18,7 @@ function App() {
           <Route path="/insights" element={<MoodInsights />} />
           <Route path="/self-care" element={<SelfCare />} />
           <Route path="/about" element={<About />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
     </Router>
