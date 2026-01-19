@@ -3,10 +3,13 @@ import Groq from "groq-sdk";
 
 const API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
-const groq = new Groq({
-    apiKey: API_KEY,
-    dangerouslyAllowBrowser: true // Required for client-side usage
-});
+let groq = null;
+if (API_KEY) {
+    groq = new Groq({
+        apiKey: API_KEY,
+        dangerouslyAllowBrowser: true
+    });
+}
 
 const SYSTEM_INSTRUCTION = `You are MindMate, a compassionate and supportive mental health companion for students. 
 Your goal is to provide a safe, non-judgmental space for students to express their feelings.
@@ -20,13 +23,6 @@ Guidelines:
 `;
 
 export const getGroqResponse = async (history, message) => {
-    if (!API_KEY) {
-        return {
-            text: "I'm having trouble connecting (API Key missing). Please check settings!",
-            mood: 'neutral'
-        };
-    }
-
     try {
         const messages = [
             { role: "system", content: SYSTEM_INSTRUCTION }
@@ -42,12 +38,29 @@ export const getGroqResponse = async (history, message) => {
         // Add current user message
         messages.push({ role: "user", content: message });
 
-        const completion = await groq.chat.completions.create({
-            messages: messages,
-            model: "llama-3.3-70b-versatile", // Latest supported model
-            temperature: 0.7,
-            max_tokens: 1024,
-        });
+        let completion;
+
+        if (groq) {
+            // Local Development: Use SDK directly
+            console.log("Using Client-side SDK");
+            completion = await groq.chat.completions.create({
+                messages: messages,
+                model: "llama-3.3-70b-versatile",
+                temperature: 0.7,
+                max_tokens: 1024,
+            });
+        } else {
+            // Production: Use Serverless Function
+            console.log("Using Serverless Function");
+            const res = await fetch('/api/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages })
+            });
+
+            if (!res.ok) throw new Error(`API Error: ${await res.text()}`);
+            completion = await res.json();
+        }
 
         const text = completion.choices[0]?.message?.content || "I'm not sure what to say.";
 
@@ -60,7 +73,7 @@ export const getGroqResponse = async (history, message) => {
         return { text, mood };
 
     } catch (error) {
-        console.error("Groq API Error:", error);
+        console.error("Groq Service Error:", error);
         return {
             text: "I'm having a little trouble thinking clearly right now. Please try again in a moment.",
             mood: 'neutral'
